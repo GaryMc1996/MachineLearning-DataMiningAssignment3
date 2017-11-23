@@ -117,66 +117,73 @@ def test_lr(alpha=0.001, num_Iterations=1000):
     #fileName = askopenfilename()
     #open the csv file. We are assuming the user defined the headers for the data in the dataset
     owlData=np.array(panda.read_csv("owls15.csv",header = None))
-    #remove headers 
-    headerData = owlData[0]
-    owlData = owlData[1:]
-    #randomise the data to ensure a fair sampling is taken for testing and training
-    np.random.shuffle(owlData)
-    #find the number of columns in the array, We are always going to assume that the last column holds the type 
-    #i.e Barn owl, Snowy owl etc. Using this we will assume the rest of the columns to be feature data 
-    typeColumn = (len(owlData[0])) - 1
-    #extract the type data from the owl data. only the last column is taken out
-    targetData = owlData[:,typeColumn]
+    #remove headers
+    i=1
+    combinedAccuracyScore=0
+    while(i<11):
+        headerData = owlData[0]
+        owlData = owlData[1:]
+        #randomise the data to ensure a fair sampling is taken for testing and training
+        np.random.shuffle(owlData)
+        #find the number of columns in the array, We are always going to assume that the last column holds the type 
+        #i.e Barn owl, Snowy owl etc. Using this we will assume the rest of the columns to be feature data 
+        typeColumn = (len(owlData[0])) - 1
+        #extract the type data from the owl data. only the last column is taken out
+        targetData = owlData[:,typeColumn]
 
-    #find the length of one third of the data. The data set sill alway be split 2/3 training and 1/3 testing 
-    #so it is safe to hardcode the valeu of 3
-    trainLength = Math.floor(len(owlData)/3)
+        #find the length of one third of the data. The data set sill alway be split 2/3 training and 1/3 testing 
+        #so it is safe to hardcode the valeu of 3
+        trainLength = Math.floor(len(owlData)/3)
 
-    #perform one hot encoding on the Target data. We place the returned data in numpy array for easier access and manipulation
-    targetData = np.array(oneHotEncoding(targetData))
+        #perform one hot encoding on the Target data. We place the returned data in numpy array for easier access and manipulation
+        targetData = np.array(oneHotEncoding(targetData))
     
-    #extract the featureData from the owlData array. All columns bar the last are taken out as we are assuming that the last column will 
-    #always be the type data
-    featureData = owlData[:,0:typeColumn]
+        #extract the featureData from the owlData array. All columns bar the last are taken out as we are assuming that the last column will 
+        #always be the type data
+        featureData = owlData[:,0:typeColumn]
 
-    #split the data set into train and test. 1/3rd test and 2/3rds train
-    trainTargetData = targetData[trainLength:]
-    trainFeatureData = featureData[trainLength:]
-    testTargetData = targetData[:trainLength]
-    testFeatureData = featureData[:trainLength]
+        #split the data set into train and test. 1/3rd test and 2/3rds train
+        trainTargetData = targetData[trainLength:]
+        trainFeatureData = featureData[trainLength:]
+        testTargetData = targetData[:trainLength]
+        testFeatureData = featureData[:trainLength]
     
-    #create our feature array and target arrys for testing 
-    featureData = np.array(trainFeatureData,dtype=np.float32)
-    targetData = np.array(trainTargetData,dtype=np.float32) 
+        #create our feature array and target arrys for testing 
+        featureData = np.array(trainFeatureData,dtype=np.float32)
+        targetData = np.array(trainTargetData,dtype=np.float32) 
 
-    #find number of features in the dataset
-    numFeatures = len(featureData.T)
-    #find the number of ccategories in the dataset
-    numCategories = len(targetData.T)
+        #find number of features in the dataset
+        numFeatures = len(featureData.T)
+        #find the number of ccategories in the dataset
+        numCategories = len(targetData.T)
    
-   #initialize the weight and bias matricies. Both start with all 0's
-    weightMatrix = np.zeros((numFeatures, numCategories))  
-    biasMatrix = np.zeros(numCategories) 
+        #initialize the weight and bias matricies. Both start with all 0's
+        weightMatrix = np.zeros((numFeatures, numCategories))  
+        biasMatrix = np.zeros(numCategories) 
 
-    # train the data set. Iterate number of times as defined in the function definition(1000 time with a learning rate of 0.001)
-    #settled on these values after it returned the best values after multiple runs
-    for num_Iters in range(num_Iterations):
-        weights,bias = train(featureData,targetData,weightMatrix,biasMatrix,alpha)
-        #update the weightMatrix every time it is return after each iterations
-        weightMatrix= weights
-        biasMatrix =bias
+        # train the data set. Iterate number of times as defined in the function definition(1000 time with a learning rate of 0.001)
+        #settled on these values after it returned the best values after multiple runs
+        for num_Iters in range(num_Iterations):
+            weights,bias = train(featureData,targetData,weightMatrix,biasMatrix,alpha)
+            #update the weightMatrix every time it is return after each iterations
+            weightMatrix= weights
+            biasMatrix =bias
 
 
-    # now we create our test arrays
-    x1 = np.array(testFeatureData,dtype=np.float32)
-    y1 = np.array(testTargetData,dtype=np.float32)
-   #run our prediction based on the weight and bias matricies calculated in the train step above
-    data = predict(x1,weightMatrix,biasMatrix)
-    #turn the predictions back into ones and zero's for easier comparision
-    data = maxValToOne(data)
-    #compute the accuracy score. Test the prediced results verus the actual results
-    accuracy  = getAccuracy(data,y1)
-    print(accuracy,'% Accuracy')
-    
+        # now we create our test arrays
+        x1 = np.array(testFeatureData,dtype=np.float32)
+        y1 = np.array(testTargetData,dtype=np.float32)
+        #run our prediction based on the weight and bias matricies calculated in the train step above
+        data = predict(x1,weightMatrix,biasMatrix)
+        #turn the predictions back into ones and zero's for easier comparision
+        data = maxValToOne(data)
+        #compute the accuracy score. Test the prediced results verus the actual results
+        accuracy  = getAccuracy(data,y1)
+        print(accuracy,'% Accuracy for iteration',i)
+        i = i +1
+        combinedAccuracyScore += accuracy
+    ##compute the average score after 10 iterations with data being randomised each time
+    averageAccuracyScore = combinedAccuracyScore/(i-1) 
+    print('Average Accuracy after %d random iterations = '% (i-1), averageAccuracyScore) 
 if __name__ == "__main__":
     test_lr()
