@@ -2,7 +2,7 @@ import sys
 import numpy
 import pandas as panda
 import pandas as pd 
-
+from tkinter.filedialog import askopenfilename
 import math as Math
 
 numpy.seterr(all='ignore')
@@ -15,16 +15,16 @@ def getAccuracy(predicted, actual):
     if(len(predicted) == len(actual)):
         j=0
         while(j<len(predicted)):
-            print(predicted[j],actual[j])
+            #print(predicted[j],actual[j])
             if(predicted[j][0] == actual[j][0]):
                 accuracy = accuracy+1
             j = j+1
     else:
         return "Can't find accuracy of two differetn sized matrixs"
     return accuracy/maxAccuracyScore
-def oneHotEncoding(owlData):
+def oneHotEncoding(owlData,):
     #oneHotData = owlData[:,4]
-
+    types = numpy.unique(owlData)
     alphabet = "LongEaredOwl","SnowyOwl","BarnOwl"
 
     char_to_int = dict((c, i) for i, c in enumerate(alphabet))
@@ -111,16 +111,7 @@ class LogisticRegression(object):
         # cost = self.negative_log_likelihood()
         # return cost
 
-    def negative_log_likelihood(self):
-        # sigmoid_activation = sigmoid(numpy.dot(self.x, self.W) + self.b)
-        sigmoid_activation = softmax(numpy.dot(self.x, self.W) + self.b)
 
-        cross_entropy = - numpy.mean(
-            numpy.sum(self.y * numpy.log(sigmoid_activation) +
-            (1 - self.y) * numpy.log(1 - sigmoid_activation),
-                      axis=1))
-
-        return cross_entropy
 
 
     def predict(self, x):
@@ -130,8 +121,13 @@ class LogisticRegression(object):
 
 def test_lr(learning_rate=0.01, n_epochs=200):
     # training data
-    #open the csv file
-    owlData=numpy.array(panda.read_csv("owls15.csv"))
+    #open window that allows user to select file to test. 
+    #fileName = askopenfilename()
+    #open the csv file. We are assuming the user defined the headers for the data in the dataset
+    owlData=numpy.array(panda.read_csv("owls15.csv",header = None))
+    #remove headers 
+    headerData = owlData[0]
+    owlData = owlData[1:]
     numpy.random.shuffle(owlData)
     #find the number of columns in the array, We are always going to assume that the last column holds the type 
     #i.e Barn owl, Snowy owl etc. Using this we will assume the rest of the columns to be feature data 
@@ -144,167 +140,21 @@ def test_lr(learning_rate=0.01, n_epochs=200):
     targetData = owlData[:,typeColumn]
 
     targetData = numpy.array(oneHotEncoding(targetData))
-    print(targetData)
-   #print(targetData) 
+    #print(targetData)
+    #print(targetData) 
     #targetData  = oneHotEncoding(targetData)
     featureData = owlData[:,0:typeColumn]
     trainTargetData = targetData[trainLength:]
     trainFeatureData = featureData[trainLength:]
     testTargetData = targetData[:trainLength]
     testFeatureData = featureData[:trainLength]
-    print(trainTargetData)
+    #print(trainTargetData)
     #print(featureData)
     
 
     x = numpy.array(trainFeatureData,dtype=numpy.float32)
-    '''[3,5,1.6,0.2],
-                    [3.2,4.7,1.6,0.2],
-                    [3.4,4.6,1.4,0.3],
-                    [3.6,5,1.4,0.2],
-[4.1,5.2,1.5,0.1],
-[3,4.9,1.4,0.2],
-[3.3,5.1,1.7,0.5],
-[3.4,4.8,1.6,0.2],
-[3.7,5.1,1.5,0.4],
-[3.1,4.9,1.5,0.1],
-[3.6,4.6,1,0.2],
-[3.9,5.4,1.7,0.4],
-[3,4.3,1.1,0.1],
-[2.9,4.4,1.4,0.2],
-[3.4,5,1.5,0.2],
-[3.5,5.1,1.4,0.2],
-[3.2,5,1.2,0.2],
-[3.8,5.1,1.9,0.4],
-[3,4.8,1.4,0.3],
-[4.2,5.5,1.4,0.2],
-[3.7,5.4,1.5,0.2],
-[3,4.8,1.4,0.1],
-[3.3,5,1.4,0.2],
-[3.2,4.7,1.3,0.2],
-[3.5,5.1,1.4,0.3],
-[3.4,4.8,1.9,0.2],
-[3.4,5.4,1.5,0.4],
-[3.8,5.1,1.5,0.3],
-[3,4.4,1.3,0.2],
-[3.5,5,1.3,0.3],
-[3.5,5,1.6,0.6],
-[3.9,5.4,1.3,0.4],
-[3.1,4.6,1.5,0.2],
-[3.8,5.7,1.7,0.3],
-[4,5.8,1.2,0.2],
-[3.7,5.3,1.5,0.2],
-[3.4,5,1.6,0.4],
-[3.2,4.4,1.3,0.2],
-[3.4,5.4,1.7,0.2],
-[3.2,4.6,1.4,0.2],
-[3.5,5.5,1.3,0.2],
-[3.1,4.8,1.6,0.2],
-[3.1,4.9,1.5,0.1],
-[3.4,5.2,1.4,0.2],
-[2.3,4.5,1.3,0.3],
-[2.8,6.4,5.6,2.1],
-[3.2,6.4,5.3,2.3],
-[2.8,6.2,4.8,1.8],
-[2.5,6.3,5,1.9],
-[3,6.1,4.9,1.8],
-[3.3,6.3,6,2.5],
-[2.6,7.7,6.9,2.3],
-[2.7,6.3,4.9,1.8],
-[2.5,4.9,4.5,1.7],
-[3,5.9,5.1,1.8],
-[3.1,6.4,5.5,1.8],
-[3.8,7.7,6.7,2.2],
-[3.4,6.2,5.4,2.3],
-[3.2,6.8,5.9,2.3],
-[3.1,6.9,5.1,2.3],
-[3,6.8,5.5,2.1],
-[3.3,6.7,5.7,2.5],
-[3.2,6.9,5.7,2.3],
-[3,7.6,6.6,2.1],
-[2.8,6.4,5.6,2.2],
-[2.2,6,5,1.5],
-[2.9,7.3,6.3,1.8],
-[3,7.1,5.9,2.1],
-[3,7.2,5.8,1.6],
-[3,6,4.8,1.8],
-[2.8,5.6,4.9,2],
-[2.9,6.3,5.6,1.8],
-[2.7,5.8,5.1,1.9],
-[2.7,5.8,5.1,1.9],
-[2.5,6.7,5.8,1.8],
-[2.8,6.3,5.1,1.5],
-[3.3,6.7,5.7,2.1],
-[3.2,7.2,6,1.8],
-[2.5,5.7,5,2],
-[3.4,6.3,5.6,2.4],
-[3.1,6.9,5.4,2.1],
-[3,6.5,5.2,2],
-[3,7.7,6.1,2.3],
-[2.8,7.4,6.1,1.9],
-[2.8,7.7,6.7,2],
-[3.6,7.2,6.1,2.5],
-[2.6,6.1,5.6,1.4],
-[3,6.7,5.2,2.3],
-[3,6.5,5.8,2.2],
-[2.7,6.4,5.3,1.9],
-[2.7,5.6,4.2,1.3],
-[3,5.9,4.2,1.5],
-[3,6.1,4.6,1.4],
-[2.3,5.5,4,1.3],
-[2.8,5.7,4.1,1.3],
-[3,5.6,4.5,1.5],
-[2.8,6.8,4.8,1.4],
-[3.1,6.7,4.4,1.4],
-[2.5,5.5,4,1.3],
-[2.9,6.2,4.3,1.3],
-[3.1,6.9,4.9,1.5],
-[2.4,5.5,3.8,1.1],
-[2.8,6.1,4.7,1.2],
-[3,6.7,5,1.7],
-[2.8,6.1,4,1.3],
-[2.9,6.4,4.3,1.3],
-[2.7,6,5.1,1.6],
-[2.7,5.8,4.1,1],
-[2.6,5.8,4,1.2],
-[3,5.7,4.2,1.2],
-[2.4,5.5,3.7,1],
-[2.5,5.1,3,1.1],
-[3.4,6,4.5,1.6],
-[2.3,5,3.3,1],
-[2.9,5.7,4.2,1.3],
-[2.7,5.8,3.9,1.2],
-[2.6,5.5,4.4,1.2],
-[2,5,3.5,1],
-[2.5,5.6,3.9,1.1],
-[3,5.4,4.5,1.5],
-[2.3,6.3,4.4,1.3],
-[2.8,6.5,4.6,1.5],
-[3,6.6,4.4,1.4],
-[2.9,6,4.5,1.5],
-[2.7,5.2,3.9,1.4],
-[2.5,6.3,4.9,1.5],
-[3.2,6.4,4.5,1.5],
-[2.9,6.1,4.7,1.4],
-[2.9,5.6,3.6,1.3],
-[2.2,6,4,1],
-[3.3,6.3,4.7,1.6],
-[3.1,6.7,4.7,1.5],
-[2.9,6.6,4.6,1.3],
-[3,5.6,4.1,1.3],
-[3.2,5.9,4.8,1.8]])'''
+   
     y = numpy.array(trainTargetData,dtype=numpy.float32) 
-    '''[1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], 
-        [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], 
-        [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], 
-        [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], 
-        [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], 
-        [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], 
-        [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], 
-        [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], 
-        [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], 
-        [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], 
-        [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1]])'''
-    #x = scaleData(x)
 
     # construct LogisticRegression
     classifier = LogisticRegression(input=x, label=y, n_in=4, n_out=3)
@@ -312,91 +162,21 @@ def test_lr(learning_rate=0.01, n_epochs=200):
     # train
     for epoch in range(n_epochs):
         classifier.train(lr=learning_rate)
-        cost = classifier.negative_log_likelihood()
-        #print('Training epoch %d, cost is ' % epoch, cost)
+        
+        if (epoch % 100 ==0):
+            print('Training epoch %d, cost is ' % epoch)
         learning_rate *= 0.95
 
 
     # test
-    x = numpy.array(testFeatureData,dtype=numpy.float32)
-    y = numpy.array(testTargetData,dtype=numpy.float32)
-    '''[[3,5,1.6,0.2],
-                    [3.2,4.7,1.6,0.2],
-                    [3.4,4.6,1.4,0.3],
-                    [3.6,5,1.4,0.2],
-[4.1,5.2,1.5,0.1],
-[3,4.9,1.4,0.2],
-[3.3,5.1,1.7,0.5],
-[3.4,4.8,1.6,0.2],
-[3.7,5.1,1.5,0.4],
-[3.1,4.9,1.5,0.1],
-[3.6,4.6,1,0.2],
-[3.9,5.4,1.7,0.4],
-[3,4.3,1.1,0.1],
-[2.9,4.4,1.4,0.2],
-[3.4,5,1.5,0.2],
-[3.5,5.1,1.4,0.2],
-[3.2,5,1.2,0.2],
-[3.8,5.1,1.9,0.4],
-[3,4.8,1.4,0.3],
-[4.2,5.5,1.4,0.2],
-[3.7,5.4,1.5,0.2],
-[3,4.8,1.4,0.1],
-[3.3,5,1.4,0.2],
-[3.2,4.7,1.3,0.2],
-[3.5,5.1,1.4,0.3],
-[3.4,4.8,1.9,0.2],
-[3.4,5.4,1.5,0.4],
-[3.8,5.1,1.5,0.3],
-[3,4.4,1.3,0.2],
-[3.5,5,1.3,0.3],
-[3.5,5,1.6,0.6],
-[3.9,5.4,1.3,0.4],
-[3.1,4.6,1.5,0.2],
-[3.8,5.7,1.7,0.3],
-[4,5.8,1.2,0.2],
-[3.7,5.3,1.5,0.2],
-[3.4,5,1.6,0.4],
-[3.2,4.4,1.3,0.2],
-[3.4,5.4,1.7,0.2],
-[3.2,4.6,1.4,0.2],
-[3.5,5.5,1.3,0.2],
-[3.1,4.8,1.6,0.2],
-[3.1,4.9,1.5,0.1],
-[3.4,5.2,1.4,0.2],
-[2.3,4.5,1.3,0.3],
-[2.8,6.4,5.6,2.1],
-[3.2,6.4,5.3,2.3],
-[2.8,6.2,4.8,1.8],
-[2.5,6.3,5,1.9],
-[3,6.1,4.9,1.8],
-[3.3,6.3,6,2.5],
-[2.6,7.7,6.9,2.3],
-[2.7,6.3,4.9,1.8],
-[2.5,4.9,4.5,1.7],
-[3,5.9,5.1,1.8],
-[3.1,6.4,5.5,1.8],
-[3.8,7.7,6.7,2.2],
-[3.4,6.2,5.4,2.3],
-[3.2,6.8,5.9,2.3],
-[3.1,6.9,5.1,2.3],
-[3,6.8,5.5,2.1],
-[3.3,6.7,5.7,2.5],
-[3.2,6.9,5.7,2.3],
-[3,7.6,6.6,2.1],
-[2.8,6.4,5.6,2.2],
-[2.2,6,5,1.5],
-[2.9,7.3,6.3,1.8],
-[3,7.1,5.9,2.1],
-[3,7.2,5.8,1.6],
-[3,6,4.8,1.8],
-[2.8,5.6,4.9,2]])'''
+    x1 = numpy.array(testFeatureData,dtype=numpy.float32)
+    y1 = numpy.array(testTargetData,dtype=numpy.float32)
    
-    data = (classifier.predict(x))
+    data = (classifier.predict(x1))
     data = maxValToOne(data)
-    print(numpy.c_[data, y])
-    accuracy  = getAccuracy(data,y)
+    #print(numpy.c_[data, y])
+    accuracy  = getAccuracy(data,y1)
     print(accuracy)
-    print(len(data))
+    #print(len(data))
 if __name__ == "__main__":
     test_lr()
